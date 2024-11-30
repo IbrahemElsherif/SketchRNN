@@ -1,6 +1,3 @@
-Here's the updated README with the model architecture and training details included:
-
-* * *
 
 Sketch Classifier Web App
 =========================
