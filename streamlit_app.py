@@ -3,14 +3,48 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model
 import numpy as np
 from PIL import Image, ImageOps
+import h5py
 
-# Load your pre-trained model
-model = load_model("sketchrnn_model.h5")
+# Load the class names
 def load_class_names(file_path):
     with open(file_path, "r") as file:
         return [line.strip() for line in file]
-
 class_names = load_class_names("class_names.txt")
+
+
+
+tf.keras.models.load_model(
+    "sketchrnn_model.h5",
+    custom_objects=None, compile=True)
+
+# Load the model
+with h5py.File("sketchrnn_model.h5", "r") as f:
+    print(list(f.keys()))  # Explore the saved model structure
+
+
+
+def create_model():
+    model = tf.keras.Sequential([
+        tf.keras.layers.Conv1D(32, kernel_size=5, strides=2, activation="relu"),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Conv1D(64, kernel_size=5, strides=2, activation="relu"),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Conv1D(128, kernel_size=3, strides=2, activation="relu"),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.LSTM(128, return_sequences=True),
+        tf.keras.layers.LSTM(128),
+        tf.keras.layers.Dense(len(class_names), activation="softmax")
+    ])
+    return model
+
+# Create and compile the model
+model = create_model()
+model.compile(optimizer='adam', 
+                loss='categorical_crossentropy', 
+                metrics=['accuracy'])
+
+model.load_weights("sketchrnn_model.h5")
+
 
 def preprocess_image(image):
     """
